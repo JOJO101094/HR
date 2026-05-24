@@ -1,0 +1,150 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./construction_pos.db"
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  password  String
+  name      String
+  role      String     @default("cashier") // admin, cashier, warehouse
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String     @unique
+  description String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  products  Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id           String     @id @default(cuid())
+  name         String
+  description  String?
+  sku          String     @unique
+  barcode      String?    @unique
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id])
+  price        Float
+  cost         Float
+  quantity     Int        @default(0)
+  image        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  saleItems    SaleItem[]
+  inventoryLogs InventoryLog[]
+
+  @@index([categoryId])
+  @@map("products")
+}
+
+model Customer {
+  id        String     @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  address   String?
+  debt      Float      @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  sales     Sale[]
+
+  @@map("customers")
+}
+
+model Sale {
+  id             String     @id @default(cuid())
+  saleNumber     String     @unique
+  customerId     String?
+  customer       Customer?  @relation(fields: [customerId], references: [id])
+  totalAmount    Float
+  discountAmount Float      @default(0)
+  finalAmount    Float
+  paymentMethod  String     // cash, card, qr
+  isPaid         Boolean    @default(true)
+  notes          String?
+  cashierId      String
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  saleItems      SaleItem[]
+  payment        Payment?
+
+  @@index([customerId])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id        String     @id @default(cuid())
+  saleId    String
+  sale      Sale       @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product    @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Float
+  discount  Float      @default(0)
+  subtotal  Float
+  createdAt DateTime   @default(now())
+
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+model Payment {
+  id        String     @id @default(cuid())
+  saleId    String     @unique
+  sale      Sale       @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  amount    Float
+  method    String
+  reference String?
+  createdAt DateTime   @default(now())
+
+  @@map("payments")
+}
+
+model InventoryLog {
+  id        String     @id @default(cuid())
+  productId String
+  product   Product    @relation(fields: [productId], references: [id])
+  type      String     // in, out, adjustment
+  quantity  Int
+  note      String?
+  createdAt DateTime   @default(now())
+
+  @@index([productId])
+  @@map("inventory_logs")
+}
+
+model Settings {
+  id              String     @id @default(cuid())
+  storeName       String     @default("Construction Store")
+  storePhone      String?
+  storeAddress    String?
+  currency        String     @default("USD")
+  taxRate         Float      @default(0)
+  receiptHeader   String?
+  receiptFooter   String?
+  printPageWidth  Int        @default(80)
+  darkMode        Boolean    @default(false)
+  updatedAt       DateTime   @updatedAt
+
+  @@map("settings")
+}
