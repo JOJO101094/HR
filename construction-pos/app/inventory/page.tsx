@@ -22,8 +22,12 @@ export default function InventoryPage() {
     sku: '',
     barcode: '',
     categoryId: '',
-    price: '',
     cost: '',
+    markup: '',
+    price: '',
+    price1: '',
+    price2: '',
+    price3: '',
     quantity: '',
   });
 
@@ -104,8 +108,12 @@ export default function InventoryPage() {
       sku: product.sku,
       barcode: product.barcode || '',
       categoryId: product.categoryId,
-      price: product.price.toString(),
       cost: product.cost.toString(),
+      markup: (product.markup || 0).toString(),
+      price: product.price.toString(),
+      price1: (product.price1 || '').toString(),
+      price2: (product.price2 || '').toString(),
+      price3: (product.price3 || '').toString(),
       quantity: product.quantity.toString(),
     });
     setEditingId(product.id);
@@ -133,8 +141,12 @@ export default function InventoryPage() {
       sku: '',
       barcode: '',
       categoryId: '',
-      price: '',
       cost: '',
+      markup: '',
+      price: '',
+      price1: '',
+      price2: '',
+      price3: '',
       quantity: '',
     });
     setEditingId(null);
@@ -185,8 +197,10 @@ export default function InventoryPage() {
                   <th className="px-6 py-3 text-left">Product</th>
                   <th className="px-6 py-3 text-left">Category</th>
                   <th className="px-6 py-3 text-center">Stock</th>
-                  <th className="px-6 py-3 text-right">Price</th>
                   <th className="px-6 py-3 text-right">Cost</th>
+                  <th className="px-6 py-3 text-right">Markup%</th>
+                  <th className="px-6 py-3 text-right">Base Price</th>
+                  <th className="px-6 py-3 text-right">Price Tiers</th>
                   <th className="px-6 py-3 text-right">Profit</th>
                   <th className="px-6 py-3 text-center">Actions</th>
                 </tr>
@@ -220,8 +234,18 @@ export default function InventoryPage() {
                           {product.quantity}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">{formatCurrency(product.price, 'THB')}</td>
                       <td className="px-6 py-4 text-right">{formatCurrency(product.cost, 'THB')}</td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="font-semibold text-primary">{product.markup || 0}%</span>
+                      </td>
+                      <td className="px-6 py-4 text-right">{formatCurrency(product.price, 'THB')}</td>
+                      <td className="px-6 py-4 text-right text-xs">
+                        <div className="space-y-1">
+                          {product.price1 && <p>P1: {formatCurrency(product.price1, 'THB')}</p>}
+                          {product.price2 && <p>P2: {formatCurrency(product.price2, 'THB')}</p>}
+                          {product.price3 && <p>P3: {formatCurrency(product.price3, 'THB')}</p>}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 text-right">
                         <div className="text-sm">
                           <p className="font-semibold text-success">{formatCurrency(profit, 'THB')}</p>
@@ -318,20 +342,9 @@ export default function InventoryPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Price</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    className="input"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Cost</label>
+                  <label className="block text-sm font-semibold mb-2">Cost Price (ราคาซื้อมา)</label>
                   <input
                     type="number"
                     step="0.01"
@@ -342,15 +355,74 @@ export default function InventoryPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Quantity</label>
+                  <label className="block text-sm font-semibold mb-2">Markup % (ค่าต่างราคา)</label>
                   <input
                     type="number"
-                    value={formData.quantity}
-                    onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                    step="0.01"
+                    value={formData.markup}
+                    onChange={(e) => setFormData({ ...formData, markup: e.target.value })}
+                    className="input"
+                    placeholder="e.g. 25"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Base Price (ราคาขาย)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                     className="input"
                     required
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Price Tier 1 (P1)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price1}
+                    onChange={(e) => setFormData({ ...formData, price1: e.target.value })}
+                    className="input"
+                    placeholder="Wholesale"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Price Tier 2 (P2)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price2}
+                    onChange={(e) => setFormData({ ...formData, price2: e.target.value })}
+                    className="input"
+                    placeholder="Regular"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-2">Price Tier 3 (P3)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={formData.price3}
+                    onChange={(e) => setFormData({ ...formData, price3: e.target.value })}
+                    className="input"
+                    placeholder="Premium"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-2">Quantity</label>
+                <input
+                  type="number"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                  className="input"
+                  required
+                />
               </div>
 
               <div>

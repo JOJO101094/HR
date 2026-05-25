@@ -3,32 +3,16 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function GET() {
-  try {
-    const products = await prisma.product.findMany({
-      include: { category: true },
-      orderBy: { name: 'asc' },
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: products,
-    });
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return NextResponse.json(
-      { success: false, message: 'Internal server error' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function POST(request: NextRequest) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     const body = await request.json();
     const { name, description, sku, categoryId, price, cost, markup, quantity, barcode, image, price1, price2, price3 } = body;
 
-    const product = await prisma.product.create({
+    const product = await prisma.product.update({
+      where: { id: params.id },
       data: {
         name,
         description,
@@ -47,16 +31,35 @@ export async function POST(request: NextRequest) {
       include: { category: true },
     });
 
-    return NextResponse.json(
-      {
-        success: true,
-        data: product,
-        message: 'Product created successfully',
-      },
-      { status: 201 }
-    );
+    return NextResponse.json({
+      success: true,
+      data: product,
+      message: 'Product updated successfully',
+    });
   } catch (error) {
-    console.error('Error creating product:', error);
+    console.error('Error updating product:', error);
+    return NextResponse.json(
+      { success: false, message: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    await prisma.product.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Product deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting product:', error);
     return NextResponse.json(
       { success: false, message: 'Internal server error' },
       { status: 500 }

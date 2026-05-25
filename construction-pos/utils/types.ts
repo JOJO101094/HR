@@ -26,8 +26,12 @@ export interface Product {
   barcode?: string;
   categoryId: string;
   category?: Category;
-  price: number;
   cost: number;
+  markup: number;
+  price: number;
+  price1?: number;
+  price2?: number;
+  price3?: number;
   quantity: number;
   image?: string;
   createdAt: Date;

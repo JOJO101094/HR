@@ -42,8 +42,12 @@ model Product {
   barcode      String?    @unique
   categoryId   String
   category     Category   @relation(fields: [categoryId], references: [id])
-  price        Float
   cost         Float
+  markup       Float      @default(0) // Markup percentage (%)
+  price        Float      // Default price (based on cost + markup)
+  price1       Float?     // Price tier 1 (Wholesale/VIP)
+  price2       Float?     // Price tier 2 (Regular)
+  price3       Float?     // Price tier 3 (Premium)
   quantity     Int        @default(0)
   image        String?
   createdAt    DateTime   @default(now())
